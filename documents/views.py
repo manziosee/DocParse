@@ -21,28 +21,10 @@ class DocumentViewSet(viewsets.ModelViewSet):
     
     @swagger_auto_schema(
         operation_description="Upload a document (PDF, Word, or Image) and extract information using AI",
-        request_body=DocumentSerializer,
         responses={
             201: openapi.Response('Document uploaded and processed successfully', DocumentSerializer),
             400: 'Bad Request - Invalid file or data',
-        },
-        manual_parameters=[
-            openapi.Parameter(
-                'file',
-                openapi.IN_FORM,
-                description="Document file (PDF, DOCX, or image)",
-                type=openapi.TYPE_FILE,
-                required=True
-            ),
-            openapi.Parameter(
-                'document_type',
-                openapi.IN_FORM,
-                description="Document type (invoice, proforma, receipt, other)",
-                type=openapi.TYPE_STRING,
-                required=False,
-                enum=['invoice', 'proforma', 'receipt', 'other']
-            ),
-        ]
+        }
     )
     def create(self, request, *args, **kwargs):
         """Upload and process document"""

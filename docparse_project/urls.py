@@ -11,7 +11,7 @@ schema_view = get_schema_view(
         title="DocParse API",
         default_version='v1',
         description="AI-Powered Document Parser API for extracting information from PDF, Word, and Image files",
-        contact=openapi.Contact(email="contact@docparse.local"),
+        contact=openapi.Contact(email="manziosee3@gmail.com"),
         license=openapi.License(name="MIT License"),
     ),
     public=True,
