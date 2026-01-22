@@ -29,6 +29,13 @@
 									"value": "invoice",
 									"type": "text",
 									"description": "Document type: invoice, proforma, receipt, or other"
+								},
+								{
+									"key": "custom_fields",
+									"value": "items,total,subtotal",
+									"type": "text",
+									"description": "Comma-separated fields to extract (e.g., items,total,subtotal,name,amount,phone,email)",
+									"disabled": true
 								}
 							]
 						},
@@ -57,6 +64,12 @@
 											"key": "document_type",
 											"value": "invoice",
 											"type": "text"
+										},
+										{
+											"key": "custom_fields",
+											"value": "items,total,subtotal",
+											"type": "text",
+											"disabled": true
 										}
 									]
 								},
@@ -79,6 +92,37 @@
 							"body": "{\n  \"id\": 1,\n  \"file\": \"/media/documents/invoice.pdf\",\n  \"document_type\": \"invoice\",\n  \"extracted_data\": {\n    \"document_type\": \"Invoice\",\n    \"document_number\": \"INV-2024-001\",\n    \"date\": \"2024-01-15\",\n    \"vendor\": {\n      \"name\": \"ABC Company\",\n      \"address\": \"123 Main St\",\n      \"tax_id\": \"123456789\"\n    },\n    \"customer\": {\n      \"name\": \"XYZ Corp\",\n      \"address\": \"456 Oak Ave\"\n    },\n    \"line_items\": [\n      {\n        \"description\": \"Product A\",\n        \"quantity\": 2,\n        \"unit_price\": 50.00,\n        \"total\": 100.00\n      }\n    ],\n    \"subtotal\": 100.00,\n    \"tax_amount\": 20.00,\n    \"total_amount\": 120.00,\n    \"currency\": \"USD\"\n  },\n  \"uploaded_at\": \"2024-01-15T10:30:00Z\",\n  \"processed\": true\n}"
 						}
 					]
+				},
+				{
+					"name": "Upload Document with Custom Fields",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"description": "Document file (PDF, DOCX, or image)"
+								},
+								{
+									"key": "custom_fields",
+									"value": "items,total,subtotal",
+									"type": "text",
+									"description": "Extract specific fields: items,total,subtotal,name,amount,phone,email,date,contact"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/documents/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "documents", ""]
+						},
+						"description": "Upload document and extract only specific fields using pattern matching (free alternative to OpenAI)."
+					},
+					"response": []
 				},
 				{
 					"name": "List All Documents",
