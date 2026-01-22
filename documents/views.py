@@ -6,7 +6,7 @@ from drf_yasg import openapi
 from .models import Document
 from .serializers import DocumentSerializer
 from .utils import process_document
-from .ai_service import extract_info_from_text, extract_info_from_image
+from .ai_service import extract_info_from_text, extract_info_from_image, extract_custom_fields
 import os
 
 class DocumentViewSet(viewsets.ModelViewSet):
@@ -40,9 +40,15 @@ class DocumentViewSet(viewsets.ModelViewSet):
             # Extract content based on file type
             content, content_type = process_document(file_path, filename)
             
-            # Extract information using AI
+            # Check if custom fields were requested
+            custom_fields = getattr(document, '_custom_fields', '')
+            
+            # Extract information using AI or custom field extraction
             if content_type == 'text':
-                extracted_data = extract_info_from_text(content)
+                if custom_fields:
+                    extracted_data = extract_custom_fields(content, custom_fields)
+                else:
+                    extracted_data = extract_info_from_text(content)
             else:  # image
                 extracted_data = extract_info_from_image(content)
             

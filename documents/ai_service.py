@@ -2,6 +2,150 @@ from django.conf import settings
 import json
 import re
 
+def extract_custom_fields(text, custom_fields_str):
+    """Extract specific fields requested by user"""
+    if not custom_fields_str:
+        return extract_info_from_text(text)  # Default extraction
+    
+    custom_fields = [field.strip().lower() for field in custom_fields_str.split(',')]
+    result = {
+        "custom_extraction": True,
+        "requested_fields": custom_fields,
+        "extracted_data": {}
+    }
+    
+    text_lower = text.lower()
+    
+    for field in custom_fields:
+        if field in ['items', 'line_items', 'products']:
+            # Extract line items
+            item_patterns = [
+                r'(\d+)\s*([A-Za-z][A-Za-z\s]+?)\s+(\d+)\s+([\d,]+)\s+([\d,]+)',
+                r'([A-Za-z][A-Za-z\s]+Chair|[A-Za-z][A-Za-z\s]+Desk|[A-Za-z][A-Za-z\s]+Shelf|[A-Za-z][A-Za-z\s]+Lamp)',
+                r'(?:chair|desk|shelf|lamp|cabinet|table)\s*[A-Za-z\s]*',
+            ]
+            items_found = []
+            for pattern in item_patterns:
+                matches = re.findall(pattern, text, re.IGNORECASE)
+                if matches:
+                    if isinstance(matches[0], tuple) and len(matches[0]) >= 2:
+                        # Full line item match
+                        for match in matches:
+                            items_found.append(match[1].strip())
+                    else:
+                        # Simple item name match
+                        items_found.extend([m.strip() for m in matches if len(m.strip()) > 2])
+                    break
+            
+            if items_found:
+                result["extracted_data"][field] = ", ".join(items_found[:5])  # First 5 items
+            else:
+                # Fallback: look for common item words
+                item_words = re.findall(r'\b(chair|desk|shelf|lamp|cabinet|table|bookshelf)\b', text, re.IGNORECASE)
+                if item_words:
+                    result["extracted_data"][field] = ", ".join(set(item_words))
+        
+        elif field in ['name', 'company_name', 'vendor_name', 'customer_name']:
+            # Extract names (first few lines or after "to:")
+            name_patterns = [
+                r'(?:company|vendor|from|bill\s+from)[:\s]+([A-Za-z\s&.,]+)',
+                r'(?:to|customer|client)[:\s]+([A-Za-z\s&.,]+)',
+                r'^([A-Za-z\s&.,]{3,30})$'  # Standalone names
+            ]
+            for pattern in name_patterns:
+                match = re.search(pattern, text, re.IGNORECASE | re.MULTILINE)
+                if match:
+                    result["extracted_data"][field] = match.group(1).strip()
+                    break
+        
+        elif field in ['amount', 'total', 'price', 'cost', 'sum']:
+            # Extract amounts - improved patterns
+            amount_patterns = [
+                rf'total[:\s]*(?:rwf)?\s*([\d,]+)',  # Total: RWF 654,900
+                rf'subtotal[:\s]*(?:rwf)?\s*([\d,]+)',  # Subtotal: RWF 555,000
+                rf'{field}[:\s]*(?:rwf|usd|eur|\$)?\s*([\d,]+\.?\d*)',
+                r'(?:total|amount|sum|price)[:\s]*(?:rwf|usd|eur|\$)?\s*([\d,]+\.?\d*)',
+                r'(?:rwf|usd|eur|\$)\s*([\d,]+\.?\d*)',
+                r'([\d,]+\.\d{2})'
+            ]
+            for pattern in amount_patterns:
+                match = re.search(pattern, text, re.IGNORECASE)
+                if match:
+                    result["extracted_data"][field] = match.group(1).replace(',', '')
+                    break
+        
+        elif field in ['code', 'purchase_code', 'order_code', 'reference', 'ref', 'id']:
+            # Extract codes/references
+            code_patterns = [
+                rf'{field}[:\s#]*([A-Z0-9-]+)',
+                r'(?:ref|reference|code|id|order)[:\s#]*([A-Z0-9-]+)',
+                r'#([A-Z0-9-]+)',
+                r'([A-Z]{2,}-\d{4}-\d+)'
+            ]
+            for pattern in code_patterns:
+                match = re.search(pattern, text, re.IGNORECASE)
+                if match:
+                    result["extracted_data"][field] = match.group(1)
+                    break
+        
+        elif field in ['phone', 'telephone', 'mobile']:
+            # Extract phone numbers
+            phone_patterns = [
+                r'(?:phone|tel|mobile)[:\s]*([\d\s\-\+\(\)]{10,})',
+                r'([\+]?[\d\s\-\(\)]{10,})',
+            ]
+            for pattern in phone_patterns:
+                match = re.search(pattern, text, re.IGNORECASE)
+                if match:
+                    result["extracted_data"][field] = match.group(1).strip()
+                    break
+        
+        elif field in ['email', 'mail']:
+            # Extract email addresses
+            email_pattern = r'([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})'
+            match = re.search(email_pattern, text)
+            if match:
+                result["extracted_data"][field] = match.group(1)
+        
+        elif field in ['date', 'invoice_date', 'order_date']:
+            # Extract dates
+            date_patterns = [
+                rf'{field}[:\s]*([\d]{{4}}-[\d]{{2}}-[\d]{{2}}|[\d]{{2}}[-/][\d]{{2}}[-/][\d]{{4}})',
+                r'date[:\s]*([\d]{4}-[\d]{2}-[\d]{2}|[\d]{2}[-/][\d]{2}[-/][\d]{4})',
+                r'([\d]{4}-[\d]{2}-[\d]{2})',
+                r'([\d]{2}[-/][\d]{2}[-/][\d]{4})'
+            ]
+            for pattern in date_patterns:
+                match = re.search(pattern, text, re.IGNORECASE)
+                if match:
+                    result["extracted_data"][field] = match.group(1)
+                    break
+        
+        elif field in ['address', 'location']:
+            # Extract addresses (lines with street/city patterns)
+            address_patterns = [
+                r'(?:address|location)[:\s]+([A-Za-z0-9\s,.-]+(?:street|road|avenue|drive|blvd)[A-Za-z0-9\s,.-]*)',
+                r'([A-Za-z0-9\s,.-]*(?:street|road|avenue|drive|blvd)[A-Za-z0-9\s,.-]*)',
+                r'([A-Za-z\s,]+,\s*[A-Za-z\s]+)'
+            ]
+            for pattern in address_patterns:
+                match = re.search(pattern, text, re.IGNORECASE)
+                if match:
+                    result["extracted_data"][field] = match.group(1).strip()
+                    break
+        
+        else:
+            # Generic field extraction
+            generic_pattern = rf'{field}[:\s]+([A-Za-z0-9\s.-]+)'
+            match = re.search(generic_pattern, text, re.IGNORECASE)
+            if match:
+                result["extracted_data"][field] = match.group(1).strip()
+    
+    result["extraction_method"] = "Custom Field Extraction (Free)"
+    result["note"] = f"Extracted {len(result['extracted_data'])} of {len(custom_fields)} requested fields"
+    
+    return result
+
 def extract_info_from_text(text):
     """Extract and organize information from text"""
     try:
