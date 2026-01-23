@@ -8,10 +8,30 @@ from drf_yasg import openapi
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="DocParse API",
+        title="DocParse API - SMART IT CONSULTING",
         default_version='v1',
-        description="AI-Powered Document Parser API for extracting information from PDF, Word, and Image files",
-        contact=openapi.Contact(email="manziosee3@gmail.com"),
+        description="""AI-Powered Document Parser API for extracting structured information from documents using natural language prompts.
+        
+        **Features:**
+        - Upload PDF, Word (.docx), and image files
+        - Extract information using natural language prompts
+        - AI-powered extraction with OpenAI GPT-4
+        - OCR support for images
+        
+        **Usage:**
+        1. Upload a document file
+        2. Provide a natural language prompt describing what to extract
+        3. Get structured JSON response with extracted information
+        
+        **Example Prompts:**
+        - "Extract all contact information and amounts"
+        - "Get vendor details and line items from this invoice"
+        - "Find all dates and reference numbers"
+        """,
+        contact=openapi.Contact(
+            name="SMART IT CONSULTING",
+            email="manziosee3@gmail.com"
+        ),
         license=openapi.License(name="MIT License"),
     ),
     public=True,

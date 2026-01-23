@@ -28,14 +28,14 @@
 									"key": "document_type",
 									"value": "invoice",
 									"type": "text",
-									"description": "Document type: invoice, proforma, receipt, or other"
+									"description": "Document type: invoice, proforma, receipt, or other",
+									"disabled": true
 								},
 								{
-									"key": "custom_fields",
-									"value": "items,total,subtotal",
+									"key": "prompt",
+									"value": "Extract all contact information and amounts from this document",
 									"type": "text",
-									"description": "Comma-separated fields to extract (e.g., items,total,subtotal,name,amount,phone,email)",
-									"disabled": true
+									"description": "Natural language prompt describing what to extract"
 								}
 							]
 						},
@@ -66,10 +66,9 @@
 											"type": "text"
 										},
 										{
-											"key": "custom_fields",
-											"value": "items,total,subtotal",
-											"type": "text",
-											"disabled": true
+											"key": "prompt",
+											"value": "Extract all contact information and amounts from this document",
+											"type": "text"
 										}
 									]
 								},
@@ -94,7 +93,7 @@
 					]
 				},
 				{
-					"name": "Upload Document with Custom Fields",
+					"name": "Upload Document with Custom Prompt",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -108,10 +107,10 @@
 									"description": "Document file (PDF, DOCX, or image)"
 								},
 								{
-									"key": "custom_fields",
-									"value": "items,total,subtotal",
+									"key": "prompt",
+									"value": "Extract vendor name, total amount, and all line items from this invoice",
 									"type": "text",
-									"description": "Extract specific fields: items,total,subtotal,name,amount,phone,email,date,contact"
+									"description": "Natural language prompt describing what to extract"
 								}
 							]
 						},
@@ -120,7 +119,7 @@
 							"host": ["{{base_url}}"],
 							"path": ["api", "documents", ""]
 						},
-						"description": "Upload document and extract only specific fields using pattern matching (free alternative to OpenAI)."
+						"description": "Upload document and extract information using natural language prompts. Examples: 'Extract all contact information', 'Get vendor details and amounts', 'Find all dates and reference numbers'."
 					},
 					"response": []
 				},
@@ -135,100 +134,6 @@
 							"path": ["api", "documents", ""]
 						},
 						"description": "Retrieve a list of all uploaded documents with their extracted data."
-					},
-					"response": []
-				},
-				{
-					"name": "Get Document by ID",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/documents/{{document_id}}/",
-							"host": ["{{base_url}}"],
-							"path": ["api", "documents", "{{document_id}}", ""]
-						},
-						"description": "Retrieve details of a specific document by its ID."
-					},
-					"response": []
-				},
-				{
-					"name": "Reprocess Document",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/documents/{{document_id}}/reprocess/",
-							"host": ["{{base_url}}"],
-							"path": ["api", "documents", "{{document_id}}", "reprocess", ""]
-						},
-						"description": "Reprocess an existing document to extract information again using AI."
-					},
-					"response": []
-				},
-				{
-					"name": "Update Document",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "document_type",
-									"value": "receipt",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{base_url}}/api/documents/{{document_id}}/",
-							"host": ["{{base_url}}"],
-							"path": ["api", "documents", "{{document_id}}", ""]
-						},
-						"description": "Update document metadata (e.g., document_type)."
-					},
-					"response": []
-				},
-				{
-					"name": "Partial Update Document",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"document_type\": \"proforma\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/documents/{{document_id}}/",
-							"host": ["{{base_url}}"],
-							"path": ["api", "documents", "{{document_id}}", ""]
-						},
-						"description": "Partially update document fields."
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Document",
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/documents/{{document_id}}/",
-							"host": ["{{base_url}}"],
-							"path": ["api", "documents", "{{document_id}}", ""]
-						},
-						"description": "Delete a document and its associated file."
 					},
 					"response": []
 				}
