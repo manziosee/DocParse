@@ -1,6 +1,6 @@
 # DocParse - AI-Powered Document Parser API
 
-> Professional Django REST API for extracting structured information from documents (PDF, Word, Images) using AI and pattern matching
+> Professional Django REST API for extracting structured information from documents (PDF, Word, Images) using AI and natural language prompts
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
@@ -10,11 +10,9 @@
 ## 🚀 Features
 
 - 📄 **Multi-format Support**: PDF, Word (.docx), and image files (JPG, PNG, etc.)
-- 🤖 **Dual Extraction Modes**: 
-  - AI-powered extraction using OpenAI GPT-4
-  - Free pattern-matching extraction (no API costs)
-- 🎯 **Custom Field Extraction**: Extract only specific fields you need
-- 📋 **Document Types**: Invoices, proforma invoices, receipts, and business documents
+- 🤖 **AI-Powered Extraction**: Uses OpenAI GPT-4 with natural language prompts
+- 💬 **Natural Language Prompts**: Tell the API exactly what you want to extract
+- 📋 **Flexible Document Processing**: Works with any document type
 - 🔄 **RESTful API**: Built with Django REST Framework
 - 📚 **Interactive Documentation**: Swagger UI and ReDoc
 - 🐳 **Docker Ready**: Complete containerization support
@@ -24,7 +22,7 @@
 
 - [Quick Start](#-quick-start)
 - [API Usage](#-api-usage)
-- [Custom Field Extraction](#-custom-field-extraction)
+- [Prompt Examples](#-prompt-examples)
 - [API Endpoints](#-api-endpoints)
 - [Documentation](#-documentation)
 - [Docker Commands](#-docker-commands)
@@ -78,14 +76,23 @@ python manage.py runserver
 
 ## 📖 API Usage
 
-### Standard Document Processing
+### Basic Document Processing
 
-Upload any document and get comprehensive information extraction:
+Upload any document and let AI extract all relevant information:
+
+```bash
+curl -X POST http://localhost:8000/api/documents/ \
+  -F "file=@invoice.pdf"
+```
+
+### Prompt-Based Extraction
+
+Upload a document with a specific prompt describing what you want to extract:
 
 ```bash
 curl -X POST http://localhost:8000/api/documents/ \
   -F "file=@invoice.pdf" \
-  -F "document_type=invoice"
+  -F "prompt=Extract vendor name, total amount, and all line items"
 ```
 
 **Response:**
@@ -95,112 +102,96 @@ curl -X POST http://localhost:8000/api/documents/ \
   "file": "/media/documents/invoice.pdf",
   "document_type": "invoice",
   "extracted_data": {
-    "document_type": "Invoice",
-    "document_number": "INV-2024-001",
-    "date": "2024-01-15",
-    "vendor": {
-      "name": "ABC Company",
-      "address": "123 Main St",
-      "tax_id": "123456789"
-    },
-    "customer": {
-      "name": "XYZ Corp",
-      "address": "456 Oak Ave"
-    },
+    "vendor_name": "ABC Company Inc.",
+    "total_amount": "$1,250.00",
     "line_items": [
       {
-        "description": "Product A",
-        "quantity": 2,
-        "unit_price": 50.00,
-        "total": 100.00
+        "description": "Web Development Services",
+        "quantity": 40,
+        "unit_price": "$25.00",
+        "total": "$1,000.00"
+      },
+      {
+        "description": "Domain Registration",
+        "quantity": 1,
+        "unit_price": "$15.00", 
+        "total": "$15.00"
       }
-    ],
-    "subtotal": 100.00,
-    "tax_amount": 20.00,
-    "total_amount": 120.00,
-    "currency": "USD"
+    ]
   },
   "uploaded_at": "2024-01-15T10:30:00Z",
   "processed": true
 }
 ```
 
-## 🎯 Custom Field Extraction
+## 💬 Prompt Examples
 
-Extract only specific fields you need using our **free pattern-matching engine** (no OpenAI API costs):
-
-### Available Fields
-
-| Field | Description | Example Output |
-|-------|-------------|----------------|
-| `items` | Product/service line items | `["Product A", "Service B"]` |
-| `total` | Total amount | `"$120.00"` |
-| `subtotal` | Subtotal amount | `"$100.00"` |
-| `name` | Names/contacts | `["John Doe", "ABC Corp"]` |
-| `amount` | Monetary amounts | `["$50.00", "$25.99"]` |
-| `phone` | Phone numbers | `["+1-555-0123", "555.456.7890"]` |
-| `email` | Email addresses | `["contact@company.com"]` |
-| `date` | Dates | `["2024-01-15", "Jan 15, 2024"]` |
-| `contact` | Contact information | `["John Doe +1-555-0123"]` |
-
-### Usage Examples
-
-**Extract specific fields:**
+### Financial Documents
 ```bash
+# Extract financial information
 curl -X POST http://localhost:8000/api/documents/ \
   -F "file=@invoice.pdf" \
-  -F "custom_fields=items,total,subtotal"
+  -F "prompt=Extract all amounts, taxes, subtotals, and payment terms"
+
+# Get vendor and customer details
+curl -X POST http://localhost:8000/api/documents/ \
+  -F "file=@invoice.pdf" \
+  -F "prompt=Extract vendor information, customer details, and billing addresses"
 ```
 
-**Extract contact information:**
+### Contact Information
 ```bash
+# Extract contact details
 curl -X POST http://localhost:8000/api/documents/ \
   -F "file=@business_card.jpg" \
-  -F "custom_fields=name,phone,email"
-```
+  -F "prompt=Extract name, phone number, email, company, and job title"
 
-**Extract amounts and dates:**
-```bash
+# Get all contact information
 curl -X POST http://localhost:8000/api/documents/ \
-  -F "file=@receipt.pdf" \
-  -F "custom_fields=amount,date,total"
+  -F "file=@document.pdf" \
+  -F "prompt=Find all phone numbers, email addresses, and physical addresses"
 ```
 
-**Custom Fields Response:**
-```json
-{
-  "id": 2,
-  "file": "/media/documents/invoice.pdf",
-  "document_type": "invoice",
-  "extracted_data": {
-    "items": ["Product A", "Service B", "Consulting"],
-    "total": "$120.00",
-    "subtotal": "$100.00"
-  },
-  "uploaded_at": "2024-01-15T10:30:00Z",
-  "processed": true
-}
+### Specific Data Extraction
+```bash
+# Extract dates and reference numbers
+curl -X POST http://localhost:8000/api/documents/ \
+  -F "file=@contract.pdf" \
+  -F "prompt=Extract all dates, reference numbers, and document IDs"
+
+# Get product information
+curl -X POST http://localhost:8000/api/documents/ \
+  -F "file=@catalog.pdf" \
+  -F "prompt=Extract product names, prices, and descriptions"
+```
+
+### Custom Business Logic
+```bash
+# Extract specific business data
+curl -X POST http://localhost:8000/api/documents/ \
+  -F "file=@report.pdf" \
+  -F "prompt=Extract key performance metrics, revenue figures, and growth percentages"
+
+# Legal document extraction
+curl -X POST http://localhost:8000/api/documents/ \
+  -F "file=@contract.pdf" \
+  -F "prompt=Extract party names, contract terms, effective dates, and termination clauses"
 ```
 
 ## 🔗 API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| **POST** | `/api/documents/` | Upload & process document |
+| **POST** | `/api/documents/` | Upload & process document with prompt |
 | **GET** | `/api/documents/` | List all documents |
-| **GET** | `/api/documents/{id}/` | Get document details |
-| **PUT** | `/api/documents/{id}/` | Update document |
-| **PATCH** | `/api/documents/{id}/` | Partial update document |
-| **DELETE** | `/api/documents/{id}/` | Delete document |
-| **POST** | `/api/documents/{id}/reprocess/` | Reprocess document |
 
 ### Request Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `file` | File | ✅ | Document file (PDF, DOCX, JPG, PNG) |
+| `file` | File | ✅ | Document file (PDF, DOCX, JPG, PNG, etc.) |
+| `prompt` | String | ❌ | Natural language prompt describing what to extract |
 | `document_type` | String | ❌ | `invoice`, `proforma`, `receipt`, `other` |
-| `custom_fields` | String | ❌ | Comma-separated fields to extract |
 
 ## 📚 Documentation
 
@@ -225,7 +216,9 @@ docker-compose logs -f web
 # Stop services
 docker-compose down
 
-# Rebuild after changes
+# Clean restart (if having issues)
+docker-compose down -v
+docker system prune -f
 docker-compose up --build
 
 # Create Django superuser
@@ -242,7 +235,7 @@ docker-compose exec web bash
 Create a `.env` file in the project root:
 
 ```env
-# OpenAI API Key (optional - only needed for AI extraction)
+# OpenAI API Key (required for AI extraction)
 OPENAI_API_KEY=sk-your-openai-api-key-here
 
 # Django Settings (optional)
@@ -255,23 +248,20 @@ SECRET_KEY=your-secret-key-here
 **Input Files:**
 - **PDF**: `.pdf`
 - **Word**: `.docx`, `.doc`
-- **Images**: `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`
+- **Images**: `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`, `.tiff`
 
 **Document Types:**
-- `invoice` - Standard invoices
-- `proforma` - Proforma invoices  
-- `receipt` - Receipts and purchase records
-- `other` - General business documents
+- Any document type - the AI will automatically detect and process
 
 ## 🔧 Advanced Usage
 
 ### Batch Processing
 ```bash
-# Process multiple files
+# Process multiple files with different prompts
 for file in *.pdf; do
   curl -X POST http://localhost:8000/api/documents/ \
     -F "file=@$file" \
-    -F "custom_fields=items,total"
+    -F "prompt=Extract vendor name and total amount"
 done
 ```
 
@@ -279,14 +269,13 @@ done
 ```python
 import requests
 
-# Upload document
+# Upload document with custom prompt
 with open('invoice.pdf', 'rb') as f:
     response = requests.post(
         'http://localhost:8000/api/documents/',
         files={'file': f},
         data={
-            'document_type': 'invoice',
-            'custom_fields': 'items,total,subtotal'
+            'prompt': 'Extract all contact information and financial details'
         }
     )
 
@@ -300,8 +289,8 @@ const FormData = require('form-data');
 const fs = require('fs');
 
 const form = new FormData();
-form.append('file', fs.createReadStream('invoice.pdf'));
-form.append('custom_fields', 'items,total,subtotal');
+form.append('file', fs.createReadStream('document.pdf'));
+form.append('prompt', 'Extract names, dates, and amounts');
 
 fetch('http://localhost:8000/api/documents/', {
     method: 'POST',
@@ -314,6 +303,16 @@ fetch('http://localhost:8000/api/documents/', {
 ## 🚨 Troubleshooting
 
 ### Common Issues
+
+**Docker ContainerConfig error:**
+```bash
+# Clean up Docker containers and volumes
+docker-compose down -v
+docker system prune -f
+
+# Rebuild from scratch
+docker-compose up --build
+```
 
 **Docker permission denied:**
 ```bash
@@ -328,12 +327,12 @@ sudo apt-get install tesseract-ocr
 ```
 
 **OpenAI API errors:**
-- Use `custom_fields` parameter for free extraction
 - Check API key validity and quota
+- Ensure OPENAI_API_KEY is set in .env file
 
 ### Performance Tips
 
-- Use `custom_fields` for faster processing
+- Use specific prompts for faster, more accurate results
 - Optimize image quality for better OCR results
 - Use PDF format when possible for best accuracy
 
@@ -342,24 +341,30 @@ sudo apt-get install tesseract-ocr
 ### What DocParse Can Extract
 
 **Financial Information:**
-- Invoice numbers and dates
+- Invoice numbers and amounts
 - Line items with quantities and prices
-- Subtotals, taxes, and total amounts
-- Currency information
+- Subtotals, taxes, and totals
 - Payment terms and due dates
+- Currency information
 
 **Contact Information:**
-- Vendor/seller details
-- Customer/buyer information
+- Names and titles
 - Phone numbers and email addresses
 - Physical addresses
+- Company information
 - Tax IDs and business numbers
 
 **Document Metadata:**
-- Document type detection
-- Issue and due dates
+- Document type and dates
 - Reference numbers
-- Bank details (when available)
+- Signatures and approvals
+- Terms and conditions
+
+**Custom Data:**
+- Any information you specify in your prompt
+- Business-specific fields
+- Legal terms and clauses
+- Technical specifications
 
 ## 📄 License
 
@@ -379,3 +384,16 @@ Professional Document Processing Solutions
 - 🐳 **Docker Guide**: Available in project files
 
 **Need help?** Check out the interactive [API Documentation](http://localhost:8000/swagger/) or explore the [Postman Collection](DocParse_API.postman_collection.json) for ready-to-use examples.
+
+## 🎯 Example Prompts
+
+Get inspired with these example prompts:
+
+- `"Extract all contact information including names, phone numbers, and email addresses"`
+- `"Get vendor details, line items, and total amount from this invoice"`
+- `"Find all dates, reference numbers, and document identifiers"`
+- `"Extract product names, prices, and quantities"`
+- `"Get customer information and billing details"`
+- `"Find all monetary amounts and currency information"`
+- `"Extract contract terms, parties involved, and effective dates"`
+- `"Get technical specifications and model numbers"`

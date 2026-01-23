@@ -5,6 +5,10 @@ from .views import DocumentViewSet
 router = DefaultRouter()
 router.register(r'documents', DocumentViewSet, basename='document')
 
+# Custom URL patterns for specific actions only
 urlpatterns = [
-    path('', include(router.urls)),
+    path('documents/', DocumentViewSet.as_view({
+        'post': 'create',
+        'get': 'list'
+    }), name='document-list'),
 ]
