@@ -1,5 +1,4 @@
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -11,23 +10,28 @@ import os
 
 class DocumentViewSet(viewsets.GenericViewSet):
     """
-    API endpoint for document upload and information extraction.
+    API endpoint for document upload and immediate information extraction.
     
-    Supports PDF, Word (.docx), and image files (JPG, PNG, etc.).
-    Uses AI to extract information based on user prompts.
+    Upload any document (PDF, Word, Image) with a prompt and get instant results.
+    No need to manage document IDs - just upload and ask!
     """
     queryset = Document.objects.all().order_by('-uploaded_at')
     serializer_class = DocumentSerializer
     
     @swagger_auto_schema(
-        operation_summary="Upload Document",
-        operation_description="Upload a document (PDF, Word, or Image) for processing. Document will be stored and ready for extraction queries.",
+        operation_summary="Upload Document and Extract Information",
+        operation_description="Upload a document and immediately extract information using a natural language prompt. No need to deal with document IDs!",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
                 'file': openapi.Schema(
                     type=openapi.TYPE_FILE,
                     description='Document file (PDF, DOCX, JPG, PNG, etc.)'
+                ),
+                'prompt': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description='Natural language prompt describing what to extract',
+                    example='List all the line items with their quantities and prices'
                 ),
                 'document_type': openapi.Schema(
                     type=openapi.TYPE_STRING,
@@ -36,81 +40,40 @@ class DocumentViewSet(viewsets.GenericViewSet):
                     example='invoice'
                 )
             },
-            required=['file']
+            required=['file', 'prompt']
         ),
         responses={
             201: openapi.Response(
-                'Document uploaded successfully',
-                DocumentSerializer,
-                examples={
-                    'application/json': {
-                        'id': 1,
-                        'file': '/media/documents/invoice.pdf',
-                        'document_type': 'invoice',
-                        'extracted_data': {},
-                        'uploaded_at': '2024-01-15T10:30:00Z',
-                        'processed': False
-                    }
-                }
-            ),
-            400: openapi.Response('Bad Request - Invalid file or data'),
-        },
-        consumes=['multipart/form-data']
-    )
-    def create(self, request, *args, **kwargs):
-        """Upload document for processing"""
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        document = serializer.save()
-        
-        return Response(
-            self.get_serializer(document).data,
-            status=status.HTTP_201_CREATED
-        )
-    
-    @swagger_auto_schema(
-        operation_summary="Extract Information",
-        operation_description="Send a natural language prompt to extract specific information from an uploaded document. Works like ChatGPT - ask anything about the document!",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'prompt': openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description='Natural language prompt describing what to extract',
-                    example='What is the vendor name and total amount?'
-                )
-            },
-            required=['prompt']
-        ),
-        responses={
-            200: openapi.Response(
-                'Information extracted successfully',
+                'Document processed and information extracted successfully',
                 openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
                         'prompt': openapi.Schema(type=openapi.TYPE_STRING),
-                        'response': openapi.Schema(type=openapi.TYPE_OBJECT),
-                        'document_id': openapi.Schema(type=openapi.TYPE_INTEGER)
+                        'response': openapi.Schema(type=openapi.TYPE_OBJECT)
                     }
                 ),
                 examples={
                     'application/json': {
-                        'prompt': 'What is the vendor name and total amount?',
+                        'prompt': 'List all the line items with their quantities and prices',
                         'response': {
-                            'vendor_name': 'ABC Company Inc.',
-                            'total_amount': '$1,250.00'
-                        },
-                        'document_id': 1
+                            'line_items': [
+                                {
+                                    'item': 'Office Chair',
+                                    'quantity': 2,
+                                    'unit_price': 'RWF 75,000',
+                                    'total': 'RWF 150,000'
+                                }
+                            ]
+                        }
                     }
                 }
             ),
-            404: openapi.Response('Document not found'),
-        }
+            400: openapi.Response('Bad Request - Invalid file or missing prompt'),
+        },
+        consumes=['multipart/form-data']
     )
-    @action(detail=True, methods=['post'])
-    def extract(self, request, pk=None):
-        """Extract information using natural language prompt"""
-        document = self.get_object()
+    def create(self, request, *args, **kwargs):
+        """Upload document and immediately extract information with prompt"""
         prompt = request.data.get('prompt', '')
         
         if not prompt.strip():
@@ -119,6 +82,11 @@ class DocumentViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        document = serializer.save()
+        
+        # Process the document immediately
         try:
             file_path = document.file.path
             filename = document.file.name
@@ -134,15 +102,14 @@ class DocumentViewSet(viewsets.GenericViewSet):
             
             return Response({
                 'prompt': prompt,
-                'response': extracted_data,
-                'document_id': document.id
-            })
+                'response': extracted_data
+            }, status=status.HTTP_201_CREATED)
             
         except Exception as e:
             import logging
-            logging.error(f"Extraction failed: {str(e)}")
+            logging.error(f"Document processing failed: {str(e)}")
             return Response(
-                {'error': 'Extraction failed'},
+                {'error': 'Document processing failed'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
     
@@ -160,18 +127,4 @@ class DocumentViewSet(viewsets.GenericViewSet):
         """List all documents"""
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-    
-    @swagger_auto_schema(
-        operation_summary="Get Document Details",
-        operation_description="Retrieve details of a specific document",
-        responses={
-            200: openapi.Response('Document details', DocumentSerializer),
-            404: openapi.Response('Document not found')
-        }
-    )
-    def retrieve(self, request, *args, **kwargs):
-        """Get document details"""
-        document = self.get_object()
-        serializer = self.get_serializer(document)
         return Response(serializer.data)

@@ -1,17 +1,27 @@
-import openai
-import re
-from typing import Dict, Any
 from django.conf import settings
+from django.http import JsonResponse
+import logging
 
-def extract_info_with_prompt(content: str, prompt: str = "") -> Dict[str, Any]:
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def extract_info_with_prompt(content: str, prompt: str = "") -> dict:
     """
     Extract information from document content based on user prompt using OpenAI.
     """
-    if not hasattr(settings, 'OPENAI_API_KEY') or not settings.OPENAI_API_KEY:
-        return {"error": "OpenAI API key not configured. Please set OPENAI_API_KEY in environment."}
-    
     try:
-        openai.api_key = settings.OPENAI_API_KEY
+        # Check if OpenAI is available
+        if not hasattr(settings, 'OPENAI_API_KEY') or not settings.OPENAI_API_KEY:
+            logger.warning("OpenAI API key not configured")
+            return {"error": "OpenAI API key not configured. Please set OPENAI_API_KEY in environment."}
+        
+        # Try importing OpenAI
+        try:
+            from openai import OpenAI
+        except ImportError:
+            logger.error("OpenAI library not installed")
+            return {"error": "OpenAI library not available"}
         
         # Default prompt if none provided
         if not prompt.strip():
@@ -24,13 +34,16 @@ def extract_info_with_prompt(content: str, prompt: str = "") -> Dict[str, Any]:
         User Request: {prompt}
         
         Document Content:
-        {content[:4000]}  # Limit content to avoid token limits
+        {content[:4000]}
         
         Please extract the requested information and return it as a JSON object. 
         Be specific and accurate. If information is not found, don't make it up.
         """
         
-        response = openai.ChatCompletion.create(
+        # Use the new OpenAI client
+        client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        
+        response = client.chat.completions.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are an expert document parser. Extract information as requested and return valid JSON."},
@@ -46,35 +59,37 @@ def extract_info_with_prompt(content: str, prompt: str = "") -> Dict[str, Any]:
         try:
             import json
             return json.loads(result)
-        except:
+        except json.JSONDecodeError:
             return {"extracted_information": result}
             
     except Exception as e:
+        logger.error(f"OpenAI extraction failed: {str(e)}")
         return {"error": f"OpenAI extraction failed: {str(e)}"}
 
-def extract_info_from_text(content: str) -> Dict[str, Any]:
+def extract_info_from_text(content: str) -> dict:
     """
     Fallback extraction using OpenAI with default comprehensive prompt.
     """
     return extract_info_with_prompt(content, "Extract all important information from this document including financial details, contact information, dates, and document metadata.")
 
-def extract_info_from_image(image_path: str) -> Dict[str, Any]:
+def extract_info_from_image(image_path: str) -> dict:
     """
     Extract information from image using OpenAI Vision API.
     """
-    if not hasattr(settings, 'OPENAI_API_KEY') or not settings.OPENAI_API_KEY:
-        return {"error": "OpenAI API key not configured"}
-    
     try:
+        if not hasattr(settings, 'OPENAI_API_KEY') or not settings.OPENAI_API_KEY:
+            return {"error": "OpenAI API key not configured"}
+        
         import base64
+        from openai import OpenAI
         
         # Read and encode image
         with open(image_path, "rb") as image_file:
             base64_image = base64.b64encode(image_file.read()).decode('utf-8')
         
-        openai.api_key = settings.OPENAI_API_KEY
+        client = OpenAI(api_key=settings.OPENAI_API_KEY)
         
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4-vision-preview",
             messages=[
                 {
@@ -101,8 +116,9 @@ def extract_info_from_image(image_path: str) -> Dict[str, Any]:
         try:
             import json
             return json.loads(result)
-        except:
+        except json.JSONDecodeError:
             return {"extracted_information": result}
             
     except Exception as e:
+        logger.error(f"Image extraction failed: {str(e)}")
         return {"error": f"Image extraction failed: {str(e)}"}
