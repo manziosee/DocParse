@@ -1,17 +1,17 @@
 {
 	"info": {
 		"_postman_id": "docparse-api-collection",
-		"name": "DocParse API - ChatGPT Style - SMART IT CONSULTING",
-		"description": "AI-Powered Document Parser API that works like ChatGPT! Upload documents and chat with them using natural language prompts.",
+		"name": "DocParse API - Upload & Extract - SMART IT CONSULTING",
+		"description": "AI-Powered Document Parser API - Upload any document with a prompt and get instant results! No IDs to manage.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "docparse"
 	},
 	"item": [
 		{
-			"name": "📁 Document Management",
+			"name": "📤 Upload Document & Extract Information",
 			"item": [
 				{
-					"name": "1️⃣ Upload Document",
+					"name": "📋 Extract Line Items",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -22,14 +22,13 @@
 									"key": "file",
 									"type": "file",
 									"src": [],
-									"description": "Document file (PDF, DOCX, JPG, PNG, etc.)"
+									"description": "Your document file (PDF, DOCX, JPG, PNG, etc.)"
 								},
 								{
-									"key": "document_type",
-									"value": "invoice",
+									"key": "prompt",
+									"value": "List all the line items with their quantities and prices",
 									"type": "text",
-									"description": "Optional: invoice, proforma, receipt, other",
-									"disabled": true
+									"description": "What you want to extract from the document"
 								}
 							]
 						},
@@ -38,11 +37,11 @@
 							"host": ["{{base_url}}"],
 							"path": ["api", "documents", ""]
 						},
-						"description": "📤 Upload a document for processing. The document will be stored and ready for ChatGPT-style questioning.\n\n**What happens:**\n- Document is uploaded and stored\n- File is processed and ready for extraction\n- You get a document ID to use for chatting\n\n**Next step:** Use the document ID to start asking questions!"
+						"description": "📋 Upload your document and extract line items with quantities and prices."
 					},
 					"response": [
 						{
-							"name": "✅ Upload Success",
+							"name": "✅ Line Items Response",
 							"originalRequest": {
 								"method": "POST",
 								"header": [],
@@ -53,6 +52,11 @@
 											"key": "file",
 											"type": "file",
 											"src": []
+										},
+										{
+											"key": "prompt",
+											"value": "List all the line items with their quantities and prices",
+											"type": "text"
 										}
 									]
 								},
@@ -72,10 +76,140 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n  \"id\": 1,\n  \"file\": \"/media/documents/invoice.pdf\",\n  \"document_type\": \"invoice\",\n  \"extracted_data\": {},\n  \"uploaded_at\": \"2024-01-15T10:30:00Z\",\n  \"processed\": false\n}"
+							"body": "{\n  \"prompt\": \"List all the line items with their quantities and prices\",\n  \"response\": {\n    \"line_items\": [\n      {\n        \"item\": \"Office Chair\",\n        \"quantity\": 2,\n        \"unit_price\": \"RWF 75,000\",\n        \"total\": \"RWF 150,000\"\n      },\n      {\n        \"item\": \"Desk Lamp\",\n        \"quantity\": 5,\n        \"unit_price\": \"RWF 15,000\",\n        \"total\": \"RWF 75,000\"\n      },\n      {\n        \"item\": \"Filing Cabinet\",\n        \"quantity\": 1,\n        \"unit_price\": \"RWF 120,000\",\n        \"total\": \"RWF 120,000\"\n      }\n    ]\n  }\n}"
 						}
 					]
 				},
+				{
+					"name": "💰 Extract Vendor & Total",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"description": "Your document file"
+								},
+								{
+									"key": "prompt",
+									"value": "What is the vendor name and total amount?",
+									"type": "text",
+									"description": "Extract vendor and total"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/documents/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "documents", ""]
+						},
+						"description": "💰 Upload your document and extract vendor name and total amount."
+					},
+					"response": []
+				},
+				{
+					"name": "📅 Extract Dates & Numbers",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"description": "Your document file"
+								},
+								{
+									"key": "prompt",
+									"value": "What are the invoice date, invoice number, and due date?",
+									"type": "text",
+									"description": "Extract dates and reference numbers"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/documents/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "documents", ""]
+						},
+						"description": "📅 Upload your document and extract important dates and reference numbers."
+					},
+					"response": []
+				},
+				{
+					"name": "📞 Extract Contact Information",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"description": "Your document file"
+								},
+								{
+									"key": "prompt",
+									"value": "Extract all contact information including addresses, phone numbers, and email addresses",
+									"type": "text",
+									"description": "Extract contact details"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/documents/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "documents", ""]
+						},
+						"description": "📞 Upload your document and extract all contact information."
+					},
+					"response": []
+				},
+				{
+					"name": "🔧 Custom Extraction",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"description": "Your document file"
+								},
+								{
+									"key": "prompt",
+									"value": "Your custom question here - ask anything about the document!",
+									"type": "text",
+									"description": "Ask anything you want to extract"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/documents/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "documents", ""]
+						},
+						"description": "🔧 Upload your document and ask any custom question!\n\n**Examples:**\n- \"What are the payment terms?\"\n- \"Extract all monetary amounts\"\n- \"Who are the parties involved?\"\n- \"What are the key terms and conditions?\"\n- \"Find all reference numbers\"\n\n**Just change the prompt to ask anything you want!**"
+					},
+					"response": []
+				}
+			],
+			"description": "📤 Upload any document with a prompt and get instant extraction results!"
+		},
+		{
+			"name": "📋 Document Management",
+			"item": [
 				{
 					"name": "📋 List All Documents",
 					"request": {
@@ -86,203 +220,12 @@
 							"host": ["{{base_url}}"],
 							"path": ["api", "documents", ""]
 						},
-						"description": "📋 Get a list of all uploaded documents with their basic information."
-					},
-					"response": []
-				},
-				{
-					"name": "🔍 Get Document Details",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/documents/{{document_id}}/",
-							"host": ["{{base_url}}"],
-							"path": ["api", "documents", "{{document_id}}", ""]
-						},
-						"description": "🔍 Get detailed information about a specific document."
+						"description": "📋 Get a list of all uploaded documents."
 					},
 					"response": []
 				}
 			],
-			"description": "📁 Basic document management operations - upload, list, and view documents."
-		},
-		{
-			"name": "💬 ChatGPT-Style Extraction",
-			"item": [
-				{
-					"name": "💬 Ask: What's the vendor and total?",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"prompt\": \"What is the vendor name and total amount?\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/documents/{{document_id}}/extract/",
-							"host": ["{{base_url}}"],
-							"path": ["api", "documents", "{{document_id}}", "extract", ""]
-						},
-						"description": "💬 Ask about vendor and total amount from your document.\n\n**How to use:**\n1. First upload a document using the upload endpoint\n2. Copy the document ID from the response\n3. Replace {{document_id}} with the actual ID\n4. Send this request to get vendor and total information"
-					},
-					"response": [
-						{
-							"name": "✅ Vendor & Total Response",
-							"originalRequest": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"prompt\": \"What is the vendor name and total amount?\"\n}"
-								},
-								"url": {
-									"raw": "{{base_url}}/api/documents/1/extract/",
-									"host": ["{{base_url}}"],
-									"path": ["api", "documents", "1", "extract", ""]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "Content-Type",
-									"value": "application/json"
-								}
-							],
-							"cookie": [],
-							"body": "{\n  \"prompt\": \"What is the vendor name and total amount?\",\n  \"response\": {\n    \"vendor_name\": \"ABC Company Inc.\",\n    \"total_amount\": \"$1,250.00\"\n  },\n  \"document_id\": 1\n}"
-						}
-					]
-				},
-				{
-					"name": "📋 Ask: List all line items",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"prompt\": \"List all the line items with their quantities and prices\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/documents/{{document_id}}/extract/",
-							"host": ["{{base_url}}"],
-							"path": ["api", "documents", "{{document_id}}", "extract", ""]
-						},
-						"description": "📋 Ask for detailed line items from your document."
-					},
-					"response": []
-				},
-				{
-					"name": "📅 Ask: What are the dates?",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"prompt\": \"What are the invoice date and due date?\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/documents/{{document_id}}/extract/",
-							"host": ["{{base_url}}"],
-							"path": ["api", "documents", "{{document_id}}", "extract", ""]
-						},
-						"description": "📅 Ask about important dates in your document."
-					},
-					"response": []
-				},
-				{
-					"name": "📞 Ask: Contact information",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"prompt\": \"Give me all contact information including phone numbers and email addresses\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/documents/{{document_id}}/extract/",
-							"host": ["{{base_url}}"],
-							"path": ["api", "documents", "{{document_id}}", "extract", ""]
-						},
-						"description": "📞 Extract all contact information from your document."
-					},
-					"response": []
-				},
-				{
-					"name": "💰 Ask: Payment terms",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"prompt\": \"What are the payment terms and conditions?\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/documents/{{document_id}}/extract/",
-							"host": ["{{base_url}}"],
-							"path": ["api", "documents", "{{document_id}}", "extract", ""]
-						},
-						"description": "💰 Ask about payment terms and conditions."
-					},
-					"response": []
-				},
-				{
-					"name": "🔧 Ask: Custom Question",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"prompt\": \"Your custom question here - ask anything about the document!\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/documents/{{document_id}}/extract/",
-							"host": ["{{base_url}}"],
-							"path": ["api", "documents", "{{document_id}}", "extract", ""]
-						},
-						"description": "🔧 Ask any custom question about your document!\n\n**Examples:**\n- \"What are the key terms and conditions?\"\n- \"Find all reference numbers\"\n- \"What technical specifications are mentioned?\"\n- \"Who are the parties involved?\"\n- \"Extract all monetary amounts\"\n\n**Just change the prompt to ask anything you want!**"
-					},
-					"response": []
-				}
-			],
-			"description": "💬 ChatGPT-style document interaction - ask unlimited questions about your uploaded documents!"
+			"description": "📋 Basic document management operations."
 		},
 		{
 			"name": "📖 API Documentation",
@@ -314,20 +257,6 @@
 						"description": "📚 Access ReDoc API documentation."
 					},
 					"response": []
-				},
-				{
-					"name": "🔧 OpenAPI JSON",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/swagger.json",
-							"host": ["{{base_url}}"],
-							"path": ["swagger.json"]
-						},
-						"description": "🔧 Get raw OpenAPI specification in JSON format."
-					},
-					"response": []
 				}
 			],
 			"description": "📖 API documentation and specification endpoints."
@@ -338,12 +267,6 @@
 			"key": "base_url",
 			"value": "http://localhost:8000",
 			"type": "string"
-		},
-		{
-			"key": "document_id",
-			"value": "1",
-			"type": "string",
-			"description": "Replace with actual document ID from upload response"
 		}
 	]
 }
