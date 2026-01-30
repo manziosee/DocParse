@@ -56,6 +56,9 @@ def process_document(file_path, filename):
         return extract_text_from_pdf(file_path), 'text'
     elif ext in ['.docx', '.doc']:
         return extract_text_from_docx(file_path), 'text'
+    elif ext == '.txt':
+        with open(file_path, 'r', encoding='utf-8') as f:
+            return f.read(), 'text'
     elif ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp']:
         # Try OCR first if available
         if OCR_AVAILABLE:

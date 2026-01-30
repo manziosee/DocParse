@@ -9,10 +9,10 @@
 
 ## 🚀 Features
 
-- 📄 **Multi-format Support**: PDF, Word (.docx), and image files (JPG, PNG, etc.)
-- 🤖 **AI-Powered Extraction**: Uses OpenAI GPT-4 with natural language prompts
-- ⚡ **Instant Results**: Upload document with prompt and get immediate extraction
-- 📋 **No ID Management**: Simple upload and extract - no complex workflows
+- 📄 **Multi-format Support**: PDF, Word (.docx), Text (.txt), and image files (JPG, PNG, etc.)
+- 🤖 **AI-Powered Extraction**: Uses OpenAI GPT with natural language prompts
+- ⚡ **Instant Results**: Upload document with optional prompt and get immediate extraction
+- 📋 **No Complex Workflows**: Single endpoint - upload and extract in one step
 - 🔄 **RESTful API**: Built with Django REST Framework
 - 📚 **Interactive Documentation**: Swagger UI and ReDoc
 - 🐳 **Docker Ready**: Complete containerization support
@@ -22,7 +22,7 @@
 
 - [Quick Start](#-quick-start)
 - [Simple Usage](#-simple-usage)
-- [API Endpoints](#-api-endpoints)
+- [API Endpoint](#-api-endpoint)
 - [Example Extractions](#-example-extractions)
 - [Documentation](#-documentation)
 - [Docker Commands](#-docker-commands)
@@ -77,78 +77,80 @@ python manage.py runserver
 
 ## ⚡ Simple Usage
 
-### **Upload Document + Extract Information (One Step!)**
+### **Upload Document & Extract Information (One Endpoint!)**
 
-Upload any document with your prompt and get instant results:
+Upload any document with optional prompt and get instant results:
 
+**With specific prompt:**
 ```bash
 curl -X POST http://localhost:8000/api/documents/ \
   -F "file=@your_document.pdf" \
-  -F "prompt=List all the line items with their quantities and prices"
+  -F "prompt=What is the total amount?"
 ```
 
 **Response:**
 ```json
 {
-  "prompt": "List all the line items with their quantities and prices",
-  "response": {
-    "line_items": [
-      {
-        "item": "Office Chair",
-        "quantity": 2,
-        "unit_price": "RWF 75,000",
-        "total": "RWF 150,000"
-      },
-      {
-        "item": "Desk Lamp",
-        "quantity": 5,
-        "unit_price": "RWF 15,000",
-        "total": "RWF 75,000"
-      },
-      {
-        "item": "Filing Cabinet",
-        "quantity": 1,
-        "unit_price": "RWF 120,000",
-        "total": "RWF 120,000"
-      }
-    ]
-  }
+  "total_amount": "RWF 654,900"
 }
 ```
 
-## 🔗 API Endpoints
+**Without prompt (extracts everything):**
+```bash
+curl -X POST http://localhost:8000/api/documents/ \
+  -F "file=@your_document.pdf"
+```
+
+**Response:**
+```json
+{
+  "dates": ["2024-01-15"],
+  "amounts": ["RWF 654,900", "RWF 120,000"],
+  "names": ["John Smith"],
+  "companies": ["ABC Supplies Ltd"],
+  "emails": ["john@abc.com"]
+}
+```
+
+## 🔗 API Endpoint
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| **POST** | `/api/documents/` | Upload document + extract with prompt |
-| **GET** | `/api/documents/` | List all uploaded documents |
+| **POST** | `/api/documents/` | Upload document & extract with optional prompt |
 
 ### Request Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `file` | File | ✅ | Document file (PDF, DOCX, JPG, PNG, etc.) |
-| `prompt` | String | ✅ | Natural language question about the document |
+| `file` | File | ✅ | Document file (PDF, DOCX, TXT, JPG, PNG, etc.) |
+| `prompt` | String | ❌ | Natural language question about the document |
 | `document_type` | String | ❌ | `invoice`, `proforma`, `receipt`, `other` |
 
 ## 💡 Example Extractions
 
-### **Financial Documents**
+### **Specific Information**
 ```bash
-# Extract line items
+# Extract total amount only
 curl -X POST http://localhost:8000/api/documents/ \
   -F "file=@invoice.pdf" \
-  -F "prompt=List all the line items with their quantities and prices"
+  -F "prompt=What is the total amount?"
 
-# Extract vendor and total
+# Extract names only
 curl -X POST http://localhost:8000/api/documents/ \
   -F "file=@invoice.pdf" \
-  -F "prompt=What is the vendor name and total amount?"
+  -F "prompt=Get me the names of people in this document"
 
-# Extract payment terms
+# Extract invoice date
 curl -X POST http://localhost:8000/api/documents/ \
   -F "file=@invoice.pdf" \
-  -F "prompt=What are the payment terms and due date?"
+  -F "prompt=What is the invoice date?"
+```
+
+### **All Information**
+```bash
+# Extract everything (no prompt)
+curl -X POST http://localhost:8000/api/documents/ \
+  -F "file=@invoice.pdf"
 ```
 
 ### **Business Cards**
@@ -157,14 +159,6 @@ curl -X POST http://localhost:8000/api/documents/ \
 curl -X POST http://localhost:8000/api/documents/ \
   -F "file=@business_card.jpg" \
   -F "prompt=Extract name, phone number, email, and company"
-```
-
-### **Contracts & Legal Documents**
-```bash
-# Extract parties and terms
-curl -X POST http://localhost:8000/api/documents/ \
-  -F "file=@contract.pdf" \
-  -F "prompt=Who are the parties involved and what are the key terms?"
 ```
 
 ## 📚 Documentation
@@ -208,7 +202,8 @@ DEBUG=False
 ALLOWED_HOSTS=localhost,127.0.0.1
 
 # OpenAI Configuration (required for AI extraction)
-OPENAI_API_KEY=sk-your-openai-api-key-here
+OPENAI_API_KEY=sk-proj-your-openai-api-key-here
+OPENAI_MODEL=gpt-3.5-turbo
 ```
 
 ### Supported File Formats
@@ -216,6 +211,7 @@ OPENAI_API_KEY=sk-your-openai-api-key-here
 **Input Files:**
 - **PDF**: `.pdf`
 - **Word**: `.docx`, `.doc`
+- **Text**: `.txt`
 - **Images**: `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`, `.tiff`
 
 ## 🔧 Advanced Usage
@@ -224,16 +220,26 @@ OPENAI_API_KEY=sk-your-openai-api-key-here
 ```python
 import requests
 
-# Upload and extract in one call
+# Upload and extract with specific prompt
 with open('invoice.pdf', 'rb') as f:
     response = requests.post(
         'http://localhost:8000/api/documents/',
         files={'file': f},
-        data={'prompt': 'List all line items with quantities and prices'}
+        data={'prompt': 'What is the total amount?'}
     )
 
 result = response.json()
-print(f"Extracted: {result['response']}")
+print(f"Total: {result.get('total_amount')}")
+
+# Upload and extract everything (no prompt)
+with open('invoice.pdf', 'rb') as f:
+    response = requests.post(
+        'http://localhost:8000/api/documents/',
+        files={'file': f}
+    )
+
+result = response.json()
+print(f"All data: {result}")
 ```
 
 ### JavaScript/Node.js Integration
@@ -243,14 +249,14 @@ const fs = require('fs');
 
 const form = new FormData();
 form.append('file', fs.createReadStream('invoice.pdf'));
-form.append('prompt', 'What is the vendor name and total amount?');
+form.append('prompt', 'What is the total amount?');
 
 fetch('http://localhost:8000/api/documents/', {
     method: 'POST',
     body: form
 })
 .then(response => response.json())
-.then(data => console.log(data.response));
+.then(data => console.log(data));
 ```
 
 ## 🚨 Troubleshooting
@@ -265,14 +271,10 @@ docker system prune -f
 docker-compose up --build
 ```
 
-**Docker permission denied:**
-```bash
-sudo docker-compose up --build
-```
-
 **OpenAI API errors:**
 - Check API key validity and quota
 - Ensure OPENAI_API_KEY is set in .env file
+- Verify you have credits in your OpenAI account
 
 ### Performance Tips
 
@@ -282,31 +284,19 @@ sudo docker-compose up --build
 
 ## 📊 What DocParse Can Extract
 
-**Financial Information:**
-- Invoice numbers and amounts
-- Line items with quantities and prices
-- Subtotals, taxes, and totals
-- Payment terms and due dates
-- Currency information
+**With Specific Prompts:**
+- Any information you ask for in natural language
+- Financial data (amounts, totals, line items)
+- Contact information (names, emails, phones)
+- Dates and reference numbers
+- Custom business data
 
-**Contact Information:**
-- Names and titles
-- Phone numbers and email addresses
-- Physical addresses
-- Company information
-- Tax IDs and business numbers
-
-**Document Metadata:**
-- Document type and dates
-- Reference numbers
-- Signatures and approvals
-- Terms and conditions
-
-**Custom Data:**
-- Any information you specify in your prompt
-- Business-specific fields
-- Legal terms and clauses
-- Technical specifications
+**Without Prompt (Extracts All):**
+- All dates found in document
+- All monetary amounts
+- All person names
+- All company names
+- All email addresses
 
 ## 📄 License
 
@@ -328,14 +318,16 @@ Professional Document Processing Solutions
 
 Get inspired with these example prompts:
 
-- `"List all the line items with their quantities and prices"`
-- `"What is the vendor name and total amount?"`
-- `"What are the invoice date and due date?"`
-- `"Extract all contact information including phone and email"`
-- `"What are the payment terms and conditions?"`
-- `"Extract all monetary amounts and currency information"`
-- `"Who are the parties involved in this document?"`
-- `"What are the key terms and important dates?"`
-- `"Find all reference numbers and document IDs"`
+- `"What is the total amount?"`
+- `"Get me the names of people in this document"`
+- `"What is the invoice date?"`
+- `"Extract all contact information"`
+- `"What are the line items?"`
+- `"Find all monetary amounts"`
+- `"Who are the companies mentioned?"`
+- `"What are the key dates?"`
+- `"Extract email addresses"`
 
-**Simple and powerful - just upload your document with a prompt and get instant results!**
+**Or leave prompt empty to extract everything automatically!**
+
+**Simple and powerful - just upload your document and get instant results!**
