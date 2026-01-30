@@ -10,26 +10,24 @@ schema_view = get_schema_view(
     openapi.Info(
         title="DocParse API - SMART IT CONSULTING",
         default_version='v1',
-        description="""AI-Powered Document Parser API - Upload and Ask!
+        description="""AI-Powered Document Parser API - Upload and Extract!
         
         **How it works:**
-        1. Upload any document (PDF, Word, Image)
-        2. Ask a question about it in natural language
+        1. Upload any document (PDF, Word, Text, Image)
+        2. Optionally ask a question about it in natural language
         3. Get instant AI-powered answers
         
         **Simple as that!**
         - No complex workflows
-        - No IDs to manage
-        - Just upload and ask
+        - Single endpoint
+        - Just upload and optionally ask
         
         **Supported Formats:**
-        PDF, Word (.docx), Images (JPG, PNG, etc.)
+        PDF, Word (.docx), Text (.txt), Images (JPG, PNG, etc.)
         
-        **Example Questions:**
-        - "What is the total amount?"
-        - "List all line items"
-        - "Who is the vendor?"
-        - "What are the payment terms?"
+        **Example Usage:**
+        - With prompt: "What is the total amount?"
+        - Without prompt: Extracts all information automatically
         
         Built by SMART IT CONSULTING - 2025
         """,
