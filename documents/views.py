@@ -20,30 +20,6 @@ class DocumentViewSet(viewsets.GenericViewSet):
     @swagger_auto_schema(
         operation_summary="Upload Document and Extract Information",
         operation_description="Upload a document and extract information. Provide a prompt to extract specific information, or leave empty to extract all information from the document.",
-        manual_parameters=[
-            openapi.Parameter(
-                'file',
-                openapi.IN_FORM,
-                description="Document file (PDF, DOCX, JPG, PNG, TXT, etc.)",
-                type=openapi.TYPE_FILE,
-                required=True
-            ),
-            openapi.Parameter(
-                'prompt',
-                openapi.IN_FORM,
-                description="Optional: Natural language prompt describing what to extract. If empty, extracts all information.",
-                type=openapi.TYPE_STRING,
-                required=False
-            ),
-            openapi.Parameter(
-                'document_type',
-                openapi.IN_FORM,
-                description="Optional document type classification",
-                type=openapi.TYPE_STRING,
-                enum=['invoice', 'proforma', 'receipt', 'other'],
-                required=False
-            )
-        ],
         responses={
             200: openapi.Response(
                 'Information extracted successfully',
@@ -58,8 +34,7 @@ class DocumentViewSet(viewsets.GenericViewSet):
                 )
             ),
             400: openapi.Response('Bad Request - Invalid file'),
-        },
-        consumes=['multipart/form-data']
+        }
     )
     def create(self, request, *args, **kwargs):
         """Upload document and extract information with prompt"""
