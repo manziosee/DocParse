@@ -70,7 +70,7 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n  \"dates\": [\"2024-01-15\"],\n  \"amounts\": [\"RWF 654,900\", \"RWF 120,000\"],\n  \"names\": [\"John Smith\"],\n  \"companies\": [\"ABC Supplies Ltd\"],\n  \"emails\": [\"john@abc.com\"]\n}"
+							"body": "{\n  \"seller\": {\n    \"company_name\": \"BrightLine Traders Ltd\",\n    \"address\": \"78 Innovation Road, Kigali, Rwanda\"\n  },\n  \"buyer\": {\n    \"company_name\": \"TechNova Solutions\",\n    \"address\": \"902 Enterprise Drive, Kigali, Rwanda\"\n  },\n  \"invoice_number\": \"PRO-2024-014\",\n  \"date\": \"2024-02-10\",\n  \"line_items\": [\n    {\"item\": \"Ergonomic Chair\", \"quantity\": 3, \"unit_price\": \"80,000\", \"total\": \"240,000\"},\n    {\"item\": \"Office Desk\", \"quantity\": 2, \"unit_price\": \"110,000\", \"total\": \"220,000\"},\n    {\"item\": \"Bookshelf\", \"quantity\": 1, \"unit_price\": \"95,000\", \"total\": \"95,000\"}\n  ],\n  \"subtotal\": \"RWF 555,000\",\n  \"tax\": \"18%\",\n  \"tax_amount\": \"RWF 99,900\",\n  \"total\": \"RWF 654,900\"\n}"
 						}
 					]
 				},

@@ -7,3 +7,5 @@ python-docx==1.1.0
 Pillow==10.3.0
 drf-yasg==1.21.7
 pytesseract==0.3.10
+gunicorn==21.2.0
+whitenoise==6.6.0
