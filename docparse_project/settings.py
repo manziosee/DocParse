@@ -113,8 +113,13 @@ SWAGGER_SETTINGS = {
     'DOC_EXPANSION': 'none',
     'DEEP_LINKING': True,
     'SHOW_EXTENSIONS': True,
-    'DEFAULT_MODEL_RENDERING': 'model'
+    'DEFAULT_MODEL_RENDERING': 'model',
+    'VALIDATOR_URL': None,
 }
+
+# Allow Swagger in production
+if not DEBUG:
+    SWAGGER_SETTINGS['VALIDATOR_URL'] = None
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-3.5-turbo')
