@@ -2,9 +2,18 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import JsonResponse
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+
+def health_check(request):
+    """Health check endpoint for monitoring."""
+    return JsonResponse({
+        "status": "healthy",
+        "service": "DocParse API",
+        "version": "1.0.0"
+    })
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -42,6 +51,8 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    path('', health_check, name='health'),
+    path('health/', health_check, name='health-check'),
     path('admin/', admin.site.urls),
     path('api/', include('documents.urls')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
