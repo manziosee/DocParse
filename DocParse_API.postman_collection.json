@@ -235,7 +235,12 @@
 	"variable": [
 		{
 			"key": "base_url",
-			"value": "https://your-app-name.onrender.com",
+			"value": "https://docparse.onrender.com",
+			"type": "string"
+		},
+		{
+			"key": "local_url",
+			"value": "http://localhost:8000",
 			"type": "string"
 		}
 	]
