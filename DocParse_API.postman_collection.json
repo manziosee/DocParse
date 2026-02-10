@@ -235,7 +235,7 @@
 	"variable": [
 		{
 			"key": "base_url",
-			"value": "http://localhost:8000",
+			"value": "https://your-app-name.onrender.com",
 			"type": "string"
 		}
 	]
