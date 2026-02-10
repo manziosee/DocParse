@@ -7,6 +7,15 @@
 [![Django](https://img.shields.io/badge/django-4.2+-green.svg)](https://www.djangoproject.com/)
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
 
+## 🚀 Live Demo
+
+**Production API**: https://docparse.onrender.com
+
+- 🌐 **API Endpoint**: https://docparse.onrender.com/api/documents/
+- 📖 **Swagger UI**: https://docparse.onrender.com/swagger/
+- 📚 **ReDoc**: https://docparse.onrender.com/redoc/
+- ❤️ **Health Check**: https://docparse.onrender.com/health/
+
 ## 🚀 Features
 
 - 📄 **Multi-format Support**: PDF, Word (.docx), Text (.txt), and image files (JPG, PNG, etc.)
@@ -77,9 +86,24 @@ python manage.py runserver
 
 ## ⚡ Simple Usage
 
-### **Upload Document & Extract Information (One Endpoint!)**
+### **Production API (Live)**
 
-Upload any document with optional prompt and get instant results:
+**With specific prompt:**
+```bash
+curl -X POST https://docparse.onrender.com/api/documents/ \
+  -F "file=@your_document.pdf" \
+  -F "prompt=What is the total amount?"
+```
+
+**Without prompt (extracts everything):**
+```bash
+curl -X POST https://docparse.onrender.com/api/documents/ \
+  -F "file=@your_document.pdf"
+```
+
+### **Local Development**
+
+**Upload Document & Extract Information:**
 
 **With specific prompt:**
 ```bash
@@ -88,27 +112,28 @@ curl -X POST http://localhost:8000/api/documents/ \
   -F "prompt=What is the total amount?"
 ```
 
-**Response:**
-```json
-{
-  "total_amount": "RWF 654,900"
-}
-```
-
 **Without prompt (extracts everything):**
 ```bash
 curl -X POST http://localhost:8000/api/documents/ \
   -F "file=@your_document.pdf"
 ```
 
-**Response:**
+**Example Response:**
 ```json
 {
-  "dates": ["2024-01-15"],
-  "amounts": ["RWF 654,900", "RWF 120,000"],
-  "names": ["John Smith"],
-  "companies": ["ABC Supplies Ltd"],
-  "emails": ["john@abc.com"]
+  "seller": {
+    "company_name": "BrightLine Traders Ltd",
+    "address": "78 Innovation Road, Kigali, Rwanda"
+  },
+  "buyer": {
+    "company_name": "TechNova Solutions",
+    "address": "902 Enterprise Drive, Kigali, Rwanda"
+  },
+  "invoice_number": "PRO-2024-014",
+  "date": "2024-02-10",
+  "subtotal": "RWF 555,000",
+  "tax": "18%",
+  "total": "RWF 654,900"
 }
 ```
 
@@ -163,13 +188,19 @@ curl -X POST http://localhost:8000/api/documents/ \
 
 ## 📚 Documentation
 
-### Interactive API Documentation
+### Live API Documentation
+- **Production Swagger**: https://docparse.onrender.com/swagger/ - Test APIs directly
+- **Production ReDoc**: https://docparse.onrender.com/redoc/ - Clean documentation
+
+### Local API Documentation
 - **Swagger UI**: http://localhost:8000/swagger/ - Test APIs directly in browser
 - **ReDoc**: http://localhost:8000/redoc/ - Clean, readable documentation
 - **OpenAPI JSON**: http://localhost:8000/swagger.json - Raw API specification
 
 ### Testing Tools
 - **Postman Collection**: Import `DocParse_API.postman_collection.json`
+  - Production URL: `https://docparse.onrender.com`
+  - Local URL: `http://localhost:8000`
 
 ## 🐳 Docker Commands
 
@@ -220,21 +251,24 @@ OPENAI_MODEL=gpt-3.5-turbo
 ```python
 import requests
 
+# Production API
+url = 'https://docparse.onrender.com/api/documents/'
+
 # Upload and extract with specific prompt
 with open('invoice.pdf', 'rb') as f:
     response = requests.post(
-        'http://localhost:8000/api/documents/',
+        url,
         files={'file': f},
         data={'prompt': 'What is the total amount?'}
     )
 
 result = response.json()
-print(f"Total: {result.get('total_amount')}")
+print(f"Extracted data: {result}")
 
 # Upload and extract everything (no prompt)
 with open('invoice.pdf', 'rb') as f:
     response = requests.post(
-        'http://localhost:8000/api/documents/',
+        url,
         files={'file': f}
     )
 
@@ -251,7 +285,7 @@ const form = new FormData();
 form.append('file', fs.createReadStream('invoice.pdf'));
 form.append('prompt', 'What is the total amount?');
 
-fetch('http://localhost:8000/api/documents/', {
+fetch('https://docparse.onrender.com/api/documents/', {
     method: 'POST',
     body: form
 })
@@ -298,21 +332,12 @@ docker-compose up --build
 - All company names
 - All email addresses
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🏢 Company
-
-**SMART IT CONSULTING** - 2025  
-Professional Document Processing Solutions
-
----
 
 ## 📞 Support
 
 - 📧 **Email**: manziosee3@gmail.com
-- 📖 **Documentation**: http://localhost:8000/swagger/
+- 🌐 **Live API**: https://docparse.onrender.com
+- 📖 **Documentation**: https://docparse.onrender.com/swagger/
 
 ## 🎯 Example Prompts
 
