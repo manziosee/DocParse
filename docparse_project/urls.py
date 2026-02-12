@@ -17,7 +17,7 @@ def health_check(request):
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="DocParse API - SMART IT CONSULTING",
+        title="DocParse API",
         default_version='v1',
         description="""AI-Powered Document Parser API - Upload and Extract!
         
@@ -37,13 +37,8 @@ schema_view = get_schema_view(
         **Example Usage:**
         - With prompt: "What is the total amount?"
         - Without prompt: Extracts all information automatically
-        
-        Built by SMART IT CONSULTING - 2025
         """,
-        contact=openapi.Contact(
-            name="SMART IT CONSULTING",
-            email="manziosee3@gmail.com"
-        ),
+        contact=openapi.Contact(email="manziosee3@gmail.com"),
         license=openapi.License(name="MIT License"),
     ),
     public=True,
